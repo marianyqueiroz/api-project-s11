@@ -1,6 +1,7 @@
 const series = require("../model/series.json");
 const fs = require("fs");
 const { deepStrictEqual } = require("assert");
+const { cachedDataVersionTag } = require("v8");
 
 const getAll =(req, res) => {
     console.log(req.url);
@@ -79,28 +80,19 @@ const deleteSerie = (req, res) => {
 const patchSeries = (req, res) => {
     const id = req.params.id;
     const atualizacao = req.body;
-    console.log(atualizacao);
 
     try {
-        const serieASerModificada = serie.find((series) => series.id == id);
+        const serieASerModificado = series.find((series) => series.id == id);
+        console.log(Object.keys(atualizacao).forEach((chave) => {
+            serieASerModificado[chave] = atualizacao[chave];
+        }));
 
-        Object.keys(atualizacao).forEach((chave) => {
-            serieASerModificada[chave] = atualizacao[chave];
-        });
-    
-        fs.writeFile("./src/model/series.json", JSON.stringify(series), function(err) {
-            if(err) {
-                return res.status(424).send({message:err});
-            };
-
-            console.log("Arquivo atualizado com sucesso!");
-        });
-
+        console.log(series);
         return res.status(200).send(series);
     } catch(err) {
-        return res.status(424).send({message: err});
-    };
-};
+        return res.status(424).send({message : err})
+    }
+}
 
 module.exports = {
     getAll,
