@@ -9,6 +9,8 @@ router.post("/", controller.postSeries);
 router.post("/series", controller.postSeries);
 router.put("/:id", controller.putSeries);
 router.delete("/:id", controller.deleteSerie);
-router.patch("/:id", controller.patchSeries);
+router.patch("/:id/liked", controller.patchSeries);
+router.post("/:id/season", controller.postNovaTemporada);
+router.post("/:id/season/:seasonId/episode", controller.postNovoEpisodio);
 
 module.exports = router;

@@ -78,21 +78,81 @@ const deleteSerie = (req, res) => {
 };
 
 const patchSeries = (req, res) => {
-    const id = req.params.id;
-    const atualizacao = req.body;
-
     try {
-        const serieASerModificado = series.find((series) => series.id == id);
-        console.log(Object.keys(atualizacao).forEach((chave) => {
-            serieASerModificado[chave] = atualizacao[chave];
-        }));
+        const serieId = req.params.id;
+        const liked = req.body.liked;
 
-        console.log(series);
-        return res.status(200).send(series);
-    } catch(err) {
-        return res.status(424).send({message : err})
-    }
-}
+        const serieUpdate = series.find(series => series.id == serieId);
+        const index = series.indexOf(serieUpdate);
+
+        if (index >= 0) {
+            serieUpdate.liked = liked;
+            series.splice(index, 1, serieUpdate);
+
+            fs.writeFile("./src/model/series.json", JSON.stringify(series), function(err) {
+                if (err) {
+                    res.status(500).send(err);
+                } else {
+                    console.log("Arquivo de filme foi atualizado com sucesso!");
+                    const serieUpdate = series.find(series => series.id == serieId);
+                    res.status(200).send(serieUpdate);
+                };
+            });
+        } else {
+            res.status(400).send({message : "Série não encontrada para atualização."});
+        };
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Erro na api");
+    };
+};
+
+
+const postNovaTemporada = (req, res) => {
+    console.log(req.body);
+
+    const serieId = req.params.id;
+    const serieFiltrada = series.find((serie) => serie.id == serieId);
+
+    const {id, code, episodes} = req.body;
+    serieFiltrada.seasons.push({id, code, episodes});
+
+    fs.writeFile("./src/model/series.json", JSON.stringify(series), function(err) {
+        if(err) {
+            return res.status(424).send({message: err});
+        };
+
+        console.log("O arquivo foi atualizado com sucesso!");
+    });
+
+    res.status(201).send(series);
+};
+
+const postNovoEpisodio = (req, res) => {
+    const serieId = req.params.id;
+    const serieFound = series.find((serie) => serie.id == serieId);
+
+    const seasonId = req.params.seasonId;
+    const seasonFound = serieFound.seasons.find(season => season.id == seasonId)
+    console.log(seasonFound);
+ 
+    const {id, code, name, watched} = req.body;
+    console.log(req.body);
+    seasonFound.episodes.push({id, code, name, watched});
+    
+    
+
+    fs.writeFile("./src/model/series.json", JSON.stringify(series), function(err) {
+        if(err) {
+            return res.status(424).send({message: err});
+        };
+
+        console.log("O arquivo foi atualizado com sucesso!");
+    });
+
+    res.status(200).send(series);
+};
+
 
 module.exports = {
     getAll,
@@ -100,5 +160,7 @@ module.exports = {
     postSeries,
     putSeries,
     deleteSerie,
-    patchSeries
+    patchSeries,
+    postNovaTemporada,
+    postNovoEpisodio
 };
